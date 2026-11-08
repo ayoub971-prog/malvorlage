@@ -1,4 +1,4 @@
-import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines} from './core.js';
+import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines,pointerSamples} from './core.js';
 const $=id=>document.getElementById(id);
 const base=$('base'), ink=$('ink'), bx=base.getContext('2d'), ix=ink.getContext('2d');
 const original=document.createElement('canvas'), template=document.createElement('canvas');
@@ -142,7 +142,7 @@ ink.addEventListener('pointerdown',e=>{
 });
 ink.addEventListener('pointermove',e=>{
  if(e.pointerId!==pointerId||!active)return;e.preventDefault();
- for(const ev of (e.getCoalescedEvents?.()||[e])){
+ for(const ev of pointerSamples(e)){
   const prev=active.points.at(-1),p=eventPoint(ev);active.points.push(p);
   paintStroke(ix,{...active,points:[prev,p]});
  }
