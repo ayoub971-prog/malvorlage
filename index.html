@@ -5,8 +5,8 @@
 <meta name="theme-color" content="#226658"><meta name="description" content="Dein Foto wird zur einfachen Zeichenvorlage. Privat, direkt auf deinem Gerät.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; style-src 'self'; script-src 'self'; worker-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>Malvorlage · Aus Fotos werden Linien</title>
-<link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=5">
-<script type="module" src="./app.js?v=5"></script>
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css?v=6">
+<script type="module" src="./app.js?v=6"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -32,13 +32,15 @@
 <label for="opacity">Vorlage im Hintergrund <output id="opacityValue">25 %</output></label><input id="opacity" type="range" min="0" max="70" value="25">
 <label class="checkbox"><input id="penOnly" type="checkbox"> Nur S Pen – Finger und Handballen zeichnen nicht</label><p class="hint">Standardmässig zeichnet nur ein vom Browser erkannter Stift. Zum Zeichnen mit Finger oder Maus diesen Schalter ausschalten.</p><button id="clearInk" type="button">Alle eigenen Striche löschen …</button>
 </div>
-<div class="paper-wrap"><div id="stage" class="stage"><canvas id="base" aria-label="Bild und Vorlage"></canvas><canvas id="ink" aria-label="Zeichenfläche" tabindex="0"></canvas></div></div>
-<p id="drawingHint" class="hint" hidden>Zeichne direkt auf dem Bild. Zum Scrollen neben die Zeichenfläche tippen.</p>
+<div class="zoom-controls tools" role="group" aria-label="Bild vergrössern und verschieben"><button id="zoomMinus" type="button" aria-label="Verkleinern">−</button><output id="zoomOutput" aria-live="polite">100 %</output><button id="zoomPlus" type="button" aria-label="Vergrössern">+</button><button id="zoomFit" type="button">Ganzes Bild</button><button id="panButton" type="button" aria-pressed="false">Verschieben</button></div>
+<p id="zoomHint" class="hint">Zwei Finger auseinander zum Vergrössern, zusammen zum Verkleinern.</p>
+<div class="paper-wrap"><div id="zoomViewport" class="zoom-viewport"><div id="stage" class="stage"><canvas id="base" aria-label="Bild und Vorlage"></canvas><canvas id="ink" aria-label="Zeichenfläche" tabindex="0"></canvas></div></div></div>
+<p id="drawingHint" class="hint" hidden>Mit dem S Pen zeichnen. Mit zwei Fingern vergrössern oder verkleinern. Zum Scrollen der Seite neben die Zeichenfläche tippen.</p>
 <div class="card exports"><h2>Dein Bild mitnehmen</h2><p id="exportHint" class="hint">Speichert die schwarze Vorlage auf weissem Papier.</p><div class="tools"><button id="download" class="primary">PNG speichern</button><button id="print">Vorlage drucken</button><button id="share" hidden>Bild teilen</button></div><p class="hint">PNG ist ein Bild, keine bearbeitbare Projektsicherung. Auf diesem Gerät wird dein letztes Projekt automatisch gespeichert.</p></div>
 </section>
 <section id="empty" class="empty"><div class="line-art" aria-hidden="true">✿</div><h2>Was möchtest du zeichnen?</h2><p>Ein Tier, dein Lieblingsspielzeug, ein Gesicht …<br>Starte oben mit einem Foto.</p></section>
 </main>
-<footer><strong>Deine Bilder bleiben auf diesem Gerät.</strong><p>Keine Konten, keine Werbung, keine kostenpflichtige KI. Kein xAI-Abo nötig. Fotos werden mit Bildfiltern verarbeitet – nicht von einer KI verstanden. Unruhige Fotos können zusätzliche Linien ergeben.</p><p>Nach dem ersten vollständigen Laden auch offline nutzbar. Browserdaten löschen entfernt dein lokales Projekt. Sichere wichtige Bilder als PNG.</p><span>Malvorlage · Version 5</span><p id="runtimeVersion" class="hint">Zeichenwerkzeuge werden geladen …</p><p id="offlineStatus" class="hint"></p></footer>
+<footer><strong>Deine Bilder bleiben auf diesem Gerät.</strong><p>Keine Konten, keine Werbung, keine kostenpflichtige KI. Kein xAI-Abo nötig. Fotos werden mit Bildfiltern verarbeitet – nicht von einer KI verstanden. Unruhige Fotos können zusätzliche Linien ergeben.</p><p>Nach dem ersten vollständigen Laden auch offline nutzbar. Browserdaten löschen entfernt dein lokales Projekt. Sichere wichtige Bilder als PNG.</p><span>Malvorlage · Version 6</span><p id="runtimeVersion" class="hint">Zeichenwerkzeuge werden geladen …</p><p id="offlineStatus" class="hint"></p></footer>
 </div><img id="printImage" alt="Vorlage zum Ausdrucken">
 <dialog id="replaceDialog"><h2>Ein neues Bild beginnen?</h2><p id="replaceMessage">Dein bisheriges Bild und deine Striche werden durch das neue Projekt ersetzt. Speichere wichtige Zeichnungen vorher als PNG.</p><div class="tools"><button id="cancelReplace">Zurück</button><button id="confirmReplace" class="primary">Neues Bild wählen</button></div></dialog>
 </body></html>
