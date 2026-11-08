@@ -45,3 +45,9 @@ Export in Ansicht «Original» und «Vorlage»: schwarze Vorlage auf Weiss. Expo
 Keine garantierten dauerhaften Gratisbedingungen eines Hostinganbieters; die App selbst benötigt weder bezahlten Dienst noch ein KI-Abonnement und lässt sich als statische Dateien anderswo hosten.
 
 Bei der Offline-Installation werden alle App-Dateien mit `cache: reload` geladen, damit neue und alte Skriptversionen nicht vermischt werden.
+
+## Zeichenwerkzeuge – Version 4
+Farben (Palette und freie Wahl), Stift mit fester Breite, druckabhängiger Pinsel und transparenter Textmarker. Die Grösse gilt auch für den Radierer. Alte Striche bleiben in ihrer bisherigen Farbe und Druckdarstellung erhalten. Der Textmarker wird bei Bewegung vollständig neu gerendert, damit Wiederherstellen und Live-Zeichnung übereinstimmen.
+Nur S Pen ist standardmässig aktiv und ignoriert Touch sowie Maus, sofern der Browser den Stift als PointerEvent mit pointerType=pen meldet. Alte Projekte wechseln einmalig auf diese Voreinstellung; die danach gewählte Einstellung wird gespeichert. Ausschalten erlaubt Finger und Maus. Das ist keine Geräte-Treiber-Palm-Rejection und wurde nicht mit physischem Samsung geprüft.
+Alle eigenen Striche löschen fragt vorher nach und erhält das Originalbild/die Vorlage. Dies leert auch den Verlauf. Weiterhin keine externen Dienste oder Kosten.
+Werkzeug-Inspiration anhand offizieller Dokumentation: Infinite Painter (docs.infinitestudio.art/painter/brushes/settings/stroke/ und painter/technical/settings/), Sketchbook (help.sketchbook.com/docs/connecting-styluses-for-mobile-users und using-the-brush-puck), Krita (docs.krita.org/en/reference_manual/preferences/general_settings.html). Keine Oberfläche wurde übernommen.
