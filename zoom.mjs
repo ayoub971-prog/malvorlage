@@ -95,7 +95,7 @@ export function createZoom({viewport, stage, minus, plus, fit, output, panButton
   function setPanMode(value) { end(); panMode = Boolean(value); render(); }
   function down(e) {
     if (destroyed || (e.button !== undefined && e.button !== 0)) return;
-    suppressed.delete(e.pointerId);
+    suppressed.delete(e.pointerId); // Pointer ids may be reused by a normal pen stroke.
     const touch = e.pointerType === 'touch';
     if (!touch && !panMode) return; // Normal pen drawing is never consumed.
     contacts.set(e.pointerId, {x:e.clientX,y:e.clientY,type:e.pointerType});
@@ -150,14 +150,24 @@ export function createZoom({viewport, stage, minus, plus, fit, output, panButton
   listen(fit, 'click', reset);
   listen(panButton, 'click', () => setPanMode(!panMode));
   let observer;
-  let width = viewport.clientWidth, height = viewport.clientHeight;
+  function outerSize() {
+    const rect = viewport.getBoundingClientRect?.();
+    // Client dimensions change when zoom itself introduces scrollbars. Only
+    // actual outer layout changes should refit. Fallback supports minimal fakes.
+    return {width: Number.isFinite(rect?.width) ? rect.width : viewport.clientWidth,
+      height: Number.isFinite(rect?.height) ? rect.height : viewport.clientHeight};
+  }
+  let measured = outerSize();
   function resize() {
-    const w = viewport.clientWidth, h = viewport.clientHeight;
-    if (w === width && h === height) return;
-    width = w; height = h; reset();
+    if (destroyed) return;
+    const next = outerSize();
+    if (next.width === measured.width && next.height === measured.height) return;
+    measured = next; reset();
   }
   if (observeResize && typeof ResizeObserver !== 'undefined') {
-    observer = new ResizeObserver(resize); observer.observe(viewport);
+    observer = new ResizeObserver(resize);
+    try { observer.observe(viewport, {box:'border-box'}); }
+    catch { observer.observe(viewport); } // Older browsers: callback still compares outer box.
   }
   render();
   return {setZoom, fit: reset, reset, resize, setPanMode,
