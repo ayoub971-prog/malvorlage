@@ -1,4 +1,4 @@
-import { extractLines } from './core.js?v=6';
+import { extractLines } from './core.js?v=7';
 self.onmessage = ({data}) => {
   try {const pixels=extractLines(new Uint8ClampedArray(data.pixels),data.width,data.height,data.detail);
     self.postMessage({id:data.id,pixels:pixels.buffer},[pixels.buffer]);

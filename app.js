@@ -1,5 +1,5 @@
-import {createZoom} from './zoom.mjs?v=6';
-import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines,pointerSamples} from './core.js?v=6';
+import {createZoom} from './zoom.mjs?v=7';
+import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines,pointerSamples} from './core.js?v=7';
 const $=id=>document.getElementById(id);
 const base=$('base'), ink=$('ink'), bx=base.getContext('2d'), ix=ink.getContext('2d');
 const original=document.createElement('canvas'), template=document.createElement('canvas');
@@ -75,7 +75,7 @@ function generate(){
  if(worker){worker.postMessage({id,width,height,detail:settings.detail,pixels:pixels.buffer},[pixels.buffer]);}
  else {setTimeout(()=>{try{acceptLines(id,extractLines(pixels,width,height,settings.detail).buffer);}catch(e){acceptLines(id,null,e.message);}},20);}
 }
-try{worker=new Worker('./worker.js?v=6',{type:'module'});worker.onmessage=({data})=>acceptLines(data.id,data.pixels,data.error);
+try{worker=new Worker('./worker.js?v=7',{type:'module'});worker.onmessage=({data})=>acceptLines(data.id,data.pixels,data.error);
  worker.onerror=()=>{worker.terminate();worker=null;if(source)generate();};}catch(e){worker=null;}
 async function decodeImage(file){
  // Native browser decoding applies orientation; no server conversion or remote requests.
@@ -192,7 +192,7 @@ $('share').onclick=async()=>{try{const file=new File([await pngBlob(exportCanvas
  await navigator.share({files:[file],title:'Meine Malvorlage'});
  }catch(e){if(e.name!=='AbortError')status('Teilen nicht möglich. Bitte PNG speichern.',true);}};
 async function init(){
- $('runtimeVersion').textContent='Zeichenwerkzeuge Version 6 bereit.';
+ $('runtimeVersion').textContent='Zeichenwerkzeuge Version 7 bereit.';
  updateSettingsUI();
  try{db=await openDB();db.onversionchange=()=>{db.close();db=null;status('Lokaler Speicher wurde geändert. Bitte App neu öffnen.',true);};
  const saved=await store('readonly',s=>s.get('current'));

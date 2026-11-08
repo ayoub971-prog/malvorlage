@@ -115,5 +115,33 @@ test('portrait and landscape whole-image fit, reset recomputes base, resize stab
  x.viewport.clientHeight=100; x.api.resize(); assert.equal(x.stage.style.width,'50%');
  x.api.setZoom(2); x.api.resize(); assert.equal(x.api.scale,2);
 });
+test('scrollbar client changes do not reset zoom; outer resize does',()=>{
+ const Previous=globalThis.ResizeObserver;
+ let callback, observedOptions;
+ globalThis.ResizeObserver=class {
+   constructor(fn){callback=fn;} observe(node,options){observedOptions=options;} disconnect(){}
+ };
+ try {
+   const x=setup();
+   // Simulate initial box measurement once before testing scrollbar changes.
+   let rect={left:10,top:20,width:996,height:696.8};
+   x.viewport.getBoundingClientRect=()=>rect;
+   callback(); // Initial real outer layout change fits.
+   assert.deepEqual(observedOptions,{box:'border-box'});
+   x.plus.emit('click'); assert.equal(x.api.scale,1.25);
+   const width=x.stage.style.width;
+   x.viewport.clientWidth-=15; x.viewport.clientHeight-=15;
+   callback(); assert.equal(x.api.scale,1.25); assert.equal(x.stage.style.width,width);
+   rect={...rect,width:800}; callback(); assert.equal(x.api.scale,1);
+   x.api.destroy();
+ } finally {globalThis.ResizeObserver=Previous;}
+});
+test('reused pointer id normal pen clears previous pan suppression',()=>{
+ const x=setup(); x.api.setPanMode(true);
+ x.viewport.emit('pointerdown',{pointerType:'pen'}); x.api.fit(); x.api.setPanMode(false);
+ assert.equal(x.viewport.emit('pointerdown',{pointerType:'pen'}).stopped,undefined);
+ assert.equal(x.viewport.emit('pointermove',{pointerType:'pen'}).stopped,undefined);
+ assert.equal(x.viewport.emit('pointerup',{pointerType:'pen'}).stopped,undefined);
+});
 
-test('a new pen contact clears suppression after cancelled pan outside viewport',()=>{const x=setup();x.api.setPanMode(true);x.viewport.emit('pointerdown',{pointerId:9,pointerType:'pen'});x.api.setPanMode(false);assert.equal(x.viewport.emit('pointerdown',{pointerId:9,pointerType:'pen'}).stopped,undefined);assert.equal(x.viewport.emit('pointermove',{pointerId:9,pointerType:'pen'}).stopped,undefined);});
+test('new pen contact clears suppression after cancelled pan',()=>{const x=setup();x.api.setPanMode(true);x.viewport.emit('pointerdown',{pointerId:9,pointerType:'pen'});x.api.setPanMode(false);assert.equal(x.viewport.emit('pointerdown',{pointerId:9,pointerType:'pen'}).stopped,undefined);assert.equal(x.viewport.emit('pointermove',{pointerId:9,pointerType:'pen'}).stopped,undefined);});
