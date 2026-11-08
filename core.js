@@ -63,11 +63,15 @@ export function extractLines(rgba, w, h, detail = 50) {
 }
 export function paintStroke(ctx, stroke) {
   ctx.save(); ctx.globalCompositeOperation=stroke.tool==='eraser'?'destination-out':'source-over';
-  ctx.strokeStyle='#202c32'; ctx.fillStyle='#202c32'; ctx.lineCap='round'; ctx.lineJoin='round';
+  const colour=/^#[0-9a-f]{6}$/i.test(stroke.colour||'')?stroke.colour:'#202c32';
+  const marker=stroke.brush==='marker'&&stroke.tool!=='eraser';
+  ctx.globalAlpha=marker?.32:1;
+  ctx.strokeStyle=colour; ctx.fillStyle=colour; ctx.lineCap=marker?'square':'round'; ctx.lineJoin='round';
   const pts=stroke.points;
   for(let i=0;i<pts.length;i++) {
     const p=pts[i], prev=pts[Math.max(0,i-1)];
-    const size=stroke.width*(p.pressure || 1);
+    const pressure=stroke.tool==='eraser'||stroke.brush==='pen'||marker?1:(p.pressure||1);
+    const size=stroke.width*pressure;
     ctx.lineWidth=size;
     if(i===0) { ctx.beginPath();ctx.arc(p.x,p.y,size/2,0,Math.PI*2);ctx.fill(); }
     else {ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(p.x,p.y);ctx.stroke();}

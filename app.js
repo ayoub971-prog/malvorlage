@@ -4,7 +4,7 @@ const base=$('base'), ink=$('ink'), bx=base.getContext('2d'), ix=ink.getContext(
 const original=document.createElement('canvas'), template=document.createElement('canvas');
 let source=null, width=0,height=0,view='template',tool='pen',history={strokes:[],redo:[]},active=null;
 let db=null,ready=false,busy=false,processing=false,processId=0,worker=null,detailTimer,saveTimer,revision=0,savedRevision=-1;
-let settings={detail:50,width:5,opacity:25,penOnly:false}, replacementAction=null, imageBusy=false;
+let settings={detail:50,width:5,opacity:25,penOnly:true,colour:'#202c32',brush:'pen',toolsVersion:4}, replacementAction=null, imageBusy=false;
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
 function openDB(){return new Promise((resolve,reject)=>{
  const request=indexedDB.open('malvorlage-local',1);
@@ -32,9 +32,12 @@ async function saveProject(){
 }
 window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);saveProject();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){finishStroke();clearTimeout(saveTimer);saveProject();}});
+function updateSizePreview(){const c=$('sizePreview'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);paintStroke(ctx,{tool,brush:settings.brush,colour:settings.colour,width:settings.width,points:[{x:18,y:36,pressure:.7},{x:78,y:36,pressure:.7}]});}
 function updateSettingsUI(){
  for(const key of ['detail','width','opacity']){$(key).value=settings[key];$(key+'Value').textContent=settings[key]+(key==='opacity'?' %':'');}
- $('penOnly').checked=settings.penOnly;
+ $('penOnly').checked=settings.penOnly;updateSizePreview();
+ $('colour').value=settings.colour;$('brush').value=settings.brush;
+ document.querySelectorAll('[data-colour]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.colour===settings.colour)));
 }
 function updateHistoryUI(){$('undo').disabled=!history.strokes.length;$('redo').disabled=!history.redo.length;}
 function redrawInk(){ix.clearRect(0,0,width,height);for(const stroke of history.strokes)paintStroke(ix,stroke);if(active)paintStroke(ix,active);updateHistoryUI();}
@@ -126,10 +129,14 @@ document.addEventListener('paste',e=>{
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $('detail').oninput=()=>{settings.detail=Number($('detail').value);$('detailValue').textContent=settings.detail;
  clearTimeout(detailTimer);processId++;processing=true;updateExportState();detailTimer=setTimeout(generate,160);markDirty();};
-$('width').oninput=()=>{settings.width=Number($('width').value);$('widthValue').textContent=settings.width;markDirty();};
+$('width').oninput=()=>{settings.width=Number($('width').value);$('widthValue').textContent=settings.width;updateSizePreview();markDirty();};
 $('opacity').oninput=()=>{settings.opacity=Number($('opacity').value);$('opacityValue').textContent=settings.opacity+' %';renderBase();markDirty();};
+$('colour').oninput=()=>{finishStroke();settings.colour=$('colour').value;selectTool('pen');updateSettingsUI();markDirty();};
+$('brush').onchange=()=>{finishStroke();settings.brush=$('brush').value;selectTool('pen');updateSizePreview();markDirty();};
+document.querySelectorAll('[data-colour]').forEach(b=>b.onclick=()=>{finishStroke();settings.colour=b.dataset.colour;selectTool('pen');updateSettingsUI();markDirty();});
+$('clearInk').onclick=()=>{finishStroke();if((!history.strokes.length&&!history.redo.length)||!window.confirm('Alle eigenen Striche löschen? Dein Foto und die Vorlage bleiben erhalten.'))return;history={strokes:[],redo:[]};redrawInk();markDirty();};
 $('penOnly').onchange=()=>{finishStroke();settings.penOnly=$('penOnly').checked;markDirty();};
-function selectTool(t){finishStroke();tool=t;$('pen').setAttribute('aria-pressed',String(t==='pen'));$('eraser').setAttribute('aria-pressed',String(t==='eraser'));}
+function selectTool(t){finishStroke();tool=t;$('pen').setAttribute('aria-pressed',String(t==='pen'));$('eraser').setAttribute('aria-pressed',String(t==='eraser'));updateSizePreview();}
 $('pen').onclick=()=>selectTool('pen');$('eraser').onclick=()=>selectTool('eraser');
 $('undo').onclick=()=>{finishStroke();history=undo(history);redrawInk();markDirty();};
 $('redo').onclick=()=>{finishStroke();history=redo(history);redrawInk();markDirty();};
@@ -138,14 +145,16 @@ function eventPoint(e){return {...mapPoint(e.clientX,e.clientY,ink.getBoundingCl
 ink.addEventListener('pointerdown',e=>{
  if(view!=='draw'||busy||pointerId!==null||e.button!==0||settings.penOnly&&e.pointerType!=='pen')return;
  e.preventDefault();pointerId=e.pointerId;ink.setPointerCapture(pointerId);
- active={tool,width:settings.width,points:[eventPoint(e)]};paintStroke(ix,active);
+ active={tool,width:settings.width,colour:settings.colour,brush:settings.brush,points:[eventPoint(e)]};paintStroke(ix,active);
 });
 ink.addEventListener('pointermove',e=>{
  if(e.pointerId!==pointerId||!active)return;e.preventDefault();
  for(const ev of pointerSamples(e)){
   const prev=active.points.at(-1),p=eventPoint(ev);active.points.push(p);
-  paintStroke(ix,{...active,points:[prev,p]});
+  if(active.brush!=='marker')paintStroke(ix,{...active,points:[prev,p]});
+
  }
+ if(active.brush==='marker')redrawInk();
 });
 function finishStroke(){
  if(!active)return;
@@ -181,9 +190,9 @@ async function init(){
  if(saved&&saved.version===1&&saved.source instanceof Blob){
    const canvas=await prepareImage(saved.source);
    const s=saved.settings||{};
-   settings={detail:Math.max(0,Math.min(100,Number(s.detail)||0)),width:Math.max(1,Math.min(35,Number(s.width)||5)),opacity:Math.max(0,Math.min(70,Number(s.opacity)||0)),penOnly:!!s.penOnly};
+   settings={detail:Math.max(0,Math.min(100,Number(s.detail)||0)),width:Math.max(1,Math.min(60,Number(s.width)||5)),opacity:Math.max(0,Math.min(70,Number(s.opacity)||0)),penOnly:s.toolsVersion===4?!!s.penOnly:true,colour:/^#[0-9a-f]{6}$/i.test(s.colour||'')?s.colour:'#202c32',brush:['pen','brush','marker'].includes(s.brush)?s.brush:'pen',toolsVersion:4};
    source=saved.source;history=saved.history||{strokes:[],redo:[]};savedRevision=revision;
-   updateSettingsUI();mountImage(canvas);status('Dein letztes Projekt wurde geöffnet.');
+   updateSettingsUI();mountImage(canvas);if(s.toolsVersion!==4)markDirty();else status('Dein letztes Projekt wurde geöffnet.');
  }else status('Bereit für dein erstes Bild.');
  }catch(e){status('Lokaler Speicher ist nicht verfügbar. Deine Bilder funktionieren trotzdem; bitte PNG sichern.',true);db=null;}
  ready=true;setBusy(false);
