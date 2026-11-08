@@ -22,7 +22,7 @@ HTTPS oder localhost sind für PWA/Service Worker erforderlich. Für GitHub Page
 - `core.js`: reine, testbare Funktionen. Luminanz + fester 3×3-Gaussfilter + Sobel + Richtungs-Nichtmaximum-Unterdrückung. Detailregler senkt nur die Schwelle, erhöht also monoton die Linienmenge. Es ist ein Kantenfilter, **keine semantische KI-Vereinfachung**. Fotos mit ruhigem Hintergrund funktionieren besser. Bei gleichen starken Kanten können doppelte Linien stehen bleiben.
 - `worker.js`: Bildfilter ausserhalb des Hauptthreads, Auftragsnummern verwerfen veraltete Antworten. Fallback im Hauptthread für Browser ohne Modul-Worker. 160-ms-Debounce. Der Fallback kann bei grossen Bildern kurz ruckeln.
 - Zwei sichtbare Canvas-Ebenen: Basis und transparente Striche. Ein zusätzlicher Original- und Vorlagen-Canvas bleiben vom Radierer unberührt. Striche sind Vektoren in Arbeitsbildkoordinaten. Pointer-Koordinaten werden mit der aktuellen Bounding-Box skaliert, auch nach Scrollen/Grössenwechsel. Druck verstärkt die Strichdicke, sofern gemeldet. «Nur Stift» akzeptiert nur `pointerType=pen`, keine Garantie für geräteweite Handballenerkennung.
-- `sw.js`: `malvorlage-v1`; HTML netzwerkzuerst, fester lokaler Asset-Cache. Bei Updates **Cache-Version erhöhen**, sonst können alte Skripte zusammen mit neuem HTML geladen werden. Keine automatischen Foto-Netzwerkaufrufe.
+- `sw.js`: `malvorlage-v2`; HTML netzwerkzuerst, fester lokaler Asset-Cache. Bei Updates **Cache-Version erhöhen**, sonst können alte Skripte zusammen mit neuem HTML geladen werden. Keine automatischen Foto-Netzwerkaufrufe.
 - `manifest.webmanifest`, `icons/`: selbst gezeichnete lokale PWA-Icons.
 - `tests/`: Node-Tests mit synthetischen Daten, keine Fotos echter Personen und kein Browser-Ersatz.
 

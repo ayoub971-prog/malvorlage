@@ -8,6 +8,12 @@ export function mapPoint(x, y, rect, width, height) {
   return { x: Math.max(0, Math.min(width, (x-rect.left)*width/rect.width)),
     y: Math.max(0, Math.min(height, (y-rect.top)*height/rect.height)) };
 }
+// Synthetic events and some browser dispatch paths return an empty coalesced list.
+// An empty array is truthy: always fall back to the actual move in that case.
+export function pointerSamples(event) {
+  const samples = event.getCoalescedEvents?.();
+  return samples?.length ? samples : [event];
+}
 export function addStroke(history, stroke) { return { strokes: [...history.strokes, stroke], redo: [] }; }
 export function undo(history) {
   if (!history.strokes.length) return history;
