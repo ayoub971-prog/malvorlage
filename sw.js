@@ -1,5 +1,5 @@
-const CACHE='malvorlage-v5';
-const ASSETS=['./','./index.html','./style.css?v=5','./app.js?v=5','./core.js?v=5','./worker.js?v=5','./manifest.webmanifest','./icons/icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='malvorlage-v6';
+const ASSETS=['./','./index.html','./style.css?v=6','./app.js?v=6','./core.js?v=6','./worker.js?v=6','./zoom.mjs?v=6','./manifest.webmanifest','./icons/icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS.map(path=>new Request(path,{cache:'reload'})))).then(()=>self.skipWaiting()));
 });

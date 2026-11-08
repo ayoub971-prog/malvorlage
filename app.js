@@ -1,10 +1,12 @@
-import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines,pointerSamples} from './core.js?v=5';
+import {createZoom} from './zoom.mjs?v=6';
+import {fitSize,mapPoint,addStroke,undo,redo,paintStroke,extractLines,pointerSamples} from './core.js?v=6';
 const $=id=>document.getElementById(id);
 const base=$('base'), ink=$('ink'), bx=base.getContext('2d'), ix=ink.getContext('2d');
 const original=document.createElement('canvas'), template=document.createElement('canvas');
 let source=null, width=0,height=0,view='template',tool='pen',history={strokes:[],redo:[]},active=null;
 let db=null,ready=false,busy=false,processing=false,processId=0,worker=null,detailTimer,saveTimer,revision=0,savedRevision=-1;
 let settings={detail:50,width:5,opacity:25,penOnly:true,colour:'#202c32',brush:'pen',toolsVersion:4}, replacementAction=null, imageBusy=false;
+let zoom=null;
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
 function openDB(){return new Promise((resolve,reject)=>{
  const request=indexedDB.open('malvorlage-local',1);
@@ -73,7 +75,7 @@ function generate(){
  if(worker){worker.postMessage({id,width,height,detail:settings.detail,pixels:pixels.buffer},[pixels.buffer]);}
  else {setTimeout(()=>{try{acceptLines(id,extractLines(pixels,width,height,settings.detail).buffer);}catch(e){acceptLines(id,null,e.message);}},20);}
 }
-try{worker=new Worker('./worker.js?v=5',{type:'module'});worker.onmessage=({data})=>acceptLines(data.id,data.pixels,data.error);
+try{worker=new Worker('./worker.js?v=6',{type:'module'});worker.onmessage=({data})=>acceptLines(data.id,data.pixels,data.error);
  worker.onerror=()=>{worker.terminate();worker=null;if(source)generate();};}catch(e){worker=null;}
 async function decodeImage(file){
  // Native browser decoding applies orientation; no server conversion or remote requests.
@@ -96,7 +98,7 @@ function mountImage(canvas){
  original.getContext('2d',{willReadFrequently:true}).drawImage(canvas,0,0);
  const tx=template.getContext('2d');tx.fillStyle='white';tx.fillRect(0,0,width,height);
  $('editor').hidden=false;$('empty').hidden=true;$('newImage').hidden=false;
- redrawInk();generate();setView('template');
+ redrawInk();generate();setView('template');zoom?.reset();
 }
 async function importFile(file){
  if(!file||imageBusy)return;imageBusy=true;setBusy(true);status('Bild wird geöffnet …');
@@ -156,6 +158,12 @@ ink.addEventListener('pointermove',e=>{
  }
  if(active.brush==='marker')redrawInk();
 });
+function cancelActiveStroke(){
+ if(!active)return;
+ const id=pointerId;active=null;pointerId=null;
+ if(id!==null&&ink.hasPointerCapture(id))ink.releasePointerCapture(id);
+ redrawInk();
+}
 function finishStroke(){
  if(!active)return;
  history=addStroke(history,active);active=null;
@@ -184,7 +192,7 @@ $('share').onclick=async()=>{try{const file=new File([await pngBlob(exportCanvas
  await navigator.share({files:[file],title:'Meine Malvorlage'});
  }catch(e){if(e.name!=='AbortError')status('Teilen nicht möglich. Bitte PNG speichern.',true);}};
 async function init(){
- $('runtimeVersion').textContent='Zeichenwerkzeuge Version 5 bereit.';
+ $('runtimeVersion').textContent='Zeichenwerkzeuge Version 6 bereit.';
  updateSettingsUI();
  try{db=await openDB();db.onversionchange=()=>{db.close();db=null;status('Lokaler Speicher wurde geändert. Bitte App neu öffnen.',true);};
  const saved=await store('readonly',s=>s.get('current'));
@@ -204,4 +212,5 @@ async function init(){
   }catch(e){$('offlineStatus').textContent='Offline-Speicherung nicht verfügbar. Die App braucht beim Öffnen eine Verbindung.';}
  }
 }
+zoom=createZoom({viewport:$('zoomViewport'),stage:$('stage'),minus:$('zoomMinus'),plus:$('zoomPlus'),fit:$('zoomFit'),output:$('zoomOutput'),panButton:$('panButton'),hint:$('zoomHint'),shouldPanTouch:()=>settings.penOnly,getAspectRatio:()=>width>0&&height>0?width/height:1,beforePan:cancelActiveStroke,onChange:()=>cancelActiveStroke()});
 init();

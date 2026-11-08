@@ -54,3 +54,8 @@ Werkzeug-Inspiration anhand offizieller Dokumentation: Infinite Painter (docs.in
 
 ## Version 5 – eindeutige App-Dateien bei Updates
 HTML und Module laden CSS/JavaScript mit Versionskennung v=5. So kann ein noch aktiver alter Service Worker keine alten App-Skripte mit dem neuen HTML kombinieren. Die Anzeige «Zeichenwerkzeuge Version 5 bereit» wird nur vom neuen Skript gesetzt. Offline-Cache malvorlage-v5 enthält dieselben versionierten Dateien. Das Einstellungs-Schema bleibt toolsVersion=4, damit explizite Benutzereinstellungen nicht erneut migriert werden.
+
+## Version 6 – Zwei-Finger-Zoom und Verschieben
+Zwei Finger auseinander vergrössern, zusammen verkleinern (100–500% relativ zur eingepassten Gesamtansicht). Der Mittelpunkt bleibt beim Zoomen unter den Fingern; ein verbleibender Finger verschiebt weiter. Alternativ stehen Plus, Minus, Ganzes Bild und Verschieben bereit. Im Nur-S-Pen-Modus verschiebt ein Finger statt zu zeichnen. Bei Beginn einer Zwei-Finger-Geste wird ein unvollständiger Fingerstrich verworfen, ohne vorhandene Striche zu löschen.
+zoom.mjs ist ein neuer, unabhängiger Baustein ohne externe Abhängigkeiten. Beide Canvas-Flächen bleiben in demselben CSS-vergrösserten Container. Ihre Bitmap-Grössen und die PNG-Ausgabe ändern sich nicht; Koordinaten werden weiter über getBoundingClientRect in Bildkoordinaten umgerechnet. Ganzes Bild passt Breite UND Höhe in die Zeichenfläche ein. Zoom wird nicht gespeichert und bei neuem Bild oder geänderter Fenstergrösse zurückgesetzt. Die Webseite kann ausserhalb der Zeichenfläche normal gescrollt werden.
+Die automatisierten Gestentests ersetzen keine physische Zwei-Finger-/S-Pen-Prüfung am Samsung.
