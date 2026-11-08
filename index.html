@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#226658"><meta name="description" content="Dein Foto wird zur einfachen Zeichenvorlage. Privat, direkt auf deinem Gerät.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; style-src 'self'; script-src 'self'; worker-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Malvorlage · Aus Fotos werden Linien</title>
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon-192.png"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./style.css">
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+<header><a class="brand" href="./"><img src="./icons/icon.svg" width="46" height="46" alt=""><span>Malvorlage<small>Dein Bild. Deine Linien.</small></span></a><span class="badge">Lokal & privat</span></header>
+<main>
+<section class="intro"><p class="eyebrow">KLEINE LINIEN, GROSSE IDEEN</p><h1>Ein Foto.<br>Ganz viel Fantasie.</h1><p>Mach aus deinem Bild eine Vorlage – zum Nachzeichnen, Ausmalen oder Ausdrucken.</p></section>
+<section class="card upload-card" aria-label="Bild auswählen">
+<div class="upload-actions"><button id="camera" class="primary" disabled>Kamera öffnen</button><button id="gallery" disabled>Bild auswählen</button><button id="newImage" class="subtle" hidden>Neues Bild</button></div>
+<input id="cameraInput" type="file" accept="image/*" capture="environment" hidden><input id="galleryInput" type="file" accept="image/*" hidden>
+<p class="hint">Oder ein kopiertes Bild hier einfügen. Keine Fotos werden hochgeladen.</p>
+</section>
+<p id="status" role="status" aria-live="polite">Lokales Projekt wird geladen …</p>
+<section id="editor" hidden aria-label="Bild bearbeiten">
+<div class="tabs" role="group" aria-label="Ansicht"><button data-view="original" aria-pressed="false">Original</button><button data-view="template" aria-pressed="true">Vorlage</button><button data-view="draw" aria-pressed="false">Nachzeichnen</button></div>
+<div id="templateControls" class="card controls"><label for="detail">Details <output id="detailValue">50</output></label><input id="detail" type="range" min="0" max="100" value="50"><div class="range-ends"><span>Weniger Details</span><span>Mehr Details</span></div><p class="hint">Ein ruhiger Hintergrund ergibt die klarsten Linien.</p></div>
+<div id="drawControls" class="card controls" hidden>
+<div class="tools" role="group" aria-label="Zeichenwerkzeug"><button id="pen" aria-pressed="true">Stift</button><button id="eraser" aria-pressed="false">Radierer</button><button id="undo" disabled aria-label="Letzten Strich rückgängig">↶ Zurück</button><button id="redo" disabled aria-label="Strich wiederherstellen">↷ Wieder</button></div>
+<label for="width">Strichdicke <output id="widthValue">5</output></label><input id="width" type="range" min="1" max="35" value="5">
+<label for="opacity">Vorlage im Hintergrund <output id="opacityValue">25 %</output></label><input id="opacity" type="range" min="0" max="70" value="25">
+<label class="checkbox"><input id="penOnly" type="checkbox"> Nur Stift (Finger zeichnet nicht)</label><p class="hint">Mit S Pen oder Finger zeichnen. «Nur Stift» hilft gegen Handballen-Striche, wenn dein Browser den Stift erkennt.</p>
+</div>
+<div class="paper-wrap"><div id="stage" class="stage"><canvas id="base" aria-label="Bild und Vorlage"></canvas><canvas id="ink" aria-label="Zeichenfläche" tabindex="0"></canvas></div></div>
+<p id="drawingHint" class="hint" hidden>Zeichne direkt auf dem Bild. Zum Scrollen neben die Zeichenfläche tippen.</p>
+<div class="card exports"><h2>Dein Bild mitnehmen</h2><p id="exportHint" class="hint">Speichert die schwarze Vorlage auf weissem Papier.</p><div class="tools"><button id="download" class="primary">PNG speichern</button><button id="print">Vorlage drucken</button><button id="share" hidden>Bild teilen</button></div><p class="hint">PNG ist ein Bild, keine bearbeitbare Projektsicherung. Auf diesem Gerät wird dein letztes Projekt automatisch gespeichert.</p></div>
+</section>
+<section id="empty" class="empty"><div class="line-art" aria-hidden="true">✿</div><h2>Was möchtest du zeichnen?</h2><p>Ein Tier, dein Lieblingsspielzeug, ein Gesicht …<br>Starte oben mit einem Foto.</p></section>
+</main>
+<footer><strong>Deine Bilder bleiben auf diesem Gerät.</strong><p>Keine Konten, keine Werbung, keine kostenpflichtige KI. Kein xAI-Abo nötig. Fotos werden mit Bildfiltern verarbeitet – nicht von einer KI verstanden. Unruhige Fotos können zusätzliche Linien ergeben.</p><p>Nach dem ersten vollständigen Laden auch offline nutzbar. Browserdaten löschen entfernt dein lokales Projekt. Sichere wichtige Bilder als PNG.</p><span>Malvorlage · Version 1</span><p id="offlineStatus" class="hint"></p></footer>
+</div><img id="printImage" alt="Vorlage zum Ausdrucken">
+<dialog id="replaceDialog"><h2>Ein neues Bild beginnen?</h2><p id="replaceMessage">Dein bisheriges Bild und deine Striche werden durch das neue Projekt ersetzt. Speichere wichtige Zeichnungen vorher als PNG.</p><div class="tools"><button id="cancelReplace">Zurück</button><button id="confirmReplace" class="primary">Neues Bild wählen</button></div></dialog>
+</body></html>
